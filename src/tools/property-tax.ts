@@ -5,6 +5,7 @@
 
 import { z } from "zod";
 import { calculateGrundsteuer, getGrundsteuerMesszahl, type GrundsteuerType } from "../lib/tax-formulas.js";
+import { formatCalculationMetadata } from "../lib/calculation-metadata.js";
 
 export const propertyTaxSchema = z.object({
   grundsteuerwert: z.number().min(0).describe("부동산 평가액 (Grundsteuerwert, EUR). Finanzamt에서 통보받은 금액"),
@@ -41,7 +42,12 @@ export async function propertyTaxTool(input: PropertyTaxInput): Promise<string> 
     ``,
     `법적 근거: GrStG §15 (Steuermesszahl), GrStG §25 (Hebesatz)`,
     ``,
-    `참고: 주거용 건물은 사회적 주거(F\u00f6rderzusage) 시 25% 감면 가능 (GrStG §15 Abs.2)`,
+    `참고: 주거용 건물은 사회적 주거(Förderzusage) 시 25% 감면 가능 (GrStG §15 Abs.2)`,
+    ``,
+    formatCalculationMetadata({
+      taxYear: 2026,
+      legalBases: ["GrStG §15", "GrStG §25"],
+    }),
   ];
 
   return lines.join("\n");

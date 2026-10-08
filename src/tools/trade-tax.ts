@@ -4,6 +4,7 @@
 
 import { z } from "zod";
 import { calculateGewerbesteuer } from "../lib/tax-formulas.js";
+import { formatCalculationMetadata } from "../lib/calculation-metadata.js";
 
 export const tradeTaxSchema = z.object({
   gewerbeertrag: z.number().min(0).describe("영업이익 (Gewerbeertrag, EUR)"),
@@ -42,6 +43,11 @@ export async function tradeTaxTool(input: TradeTaxInput): Promise<string> {
     `실효세율:              ${gewerbeertrag > 0 ? (gewst / gewerbeertrag * 100).toFixed(2) : "0.00"}%`,
     ``,
     `법적 근거: GewStG §11 (Steuermesszahl 3.5%), §16 (Hebesatz)`,
+    ``,
+    formatCalculationMetadata({
+      taxYear: 2026,
+      legalBases: ["GewStG §11", "GewStG §16"],
+    }),
   );
 
   return lines.join("\n");
