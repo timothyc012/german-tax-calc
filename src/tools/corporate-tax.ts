@@ -5,6 +5,7 @@
 
 import { z } from "zod";
 import { calculateCorporateTaxTotal, type CorporateTaxResult } from "../lib/tax-formulas.js";
+import { formatCalculationMetadata } from "../lib/calculation-metadata.js";
 
 export const corporateTaxSchema = z.object({
   taxableIncome: z.number().min(0).describe("과세 소득 (zu versteuerndes Einkommen, EUR)"),
@@ -15,7 +16,7 @@ export const corporateTaxSchema = z.object({
 
 export type CorporateTaxInput = z.infer<typeof corporateTaxSchema>;
 
-function formatResult(r: CorporateTaxResult): string {
+function formatResult(r: CorporateTaxResult, taxYear: number): string {
   const lines: string[] = [
     `[법인 세금 계산 결과 — ${r.corporateTaxRate < 15 ? "KStG §23 단계적 인하 적용" : "2026년 기준"}]`,
     ``,
@@ -35,6 +36,11 @@ function formatResult(r: CorporateTaxResult): string {
     ``,
     `법적 근거: KStG §23 (법인세율), SolZG §4 (연대부담금),`,
     `          GewStG §11 (영업세 Steuermesszahl)`,
+    ``,
+    formatCalculationMetadata({
+      taxYear,
+      legalBases: ["KStG §23", "SolZG §4", "GewStG §11"],
+    }),
   ];
 
   return lines.join("\n");
@@ -52,7 +58,7 @@ export async function corporateTaxTool(input: CorporateTaxInput): Promise<string
       hebesatz: input.hebesatz,
       year: input.year,
     });
-    return formatResult(result);
+    return formatResult(result, input.year);
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     return `[계산 오류] ${msg}`;

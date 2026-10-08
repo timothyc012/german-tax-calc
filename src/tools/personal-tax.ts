@@ -4,6 +4,7 @@
 
 import { z } from "zod";
 import { calculatePersonalTax, type PersonalTaxResult } from "../lib/tax-formulas.js";
+import { formatCalculationMetadata } from "../lib/calculation-metadata.js";
 
 export const personalTaxSchema = z.object({
   grossIncome: z.number().min(0).describe("연간 총소득 (Bruttoeinkommen, EUR)"),
@@ -55,6 +56,11 @@ function formatResult(r: PersonalTaxResult): string {
     `법적 근거: EStG §32a (소득세율), SolZG §4 (연대부담금),`,
     `          EStG §9a (Werbungskosten-Pauschale),`,
     `          EStG §32 Abs.6 (Kinderfreibetrag)`,
+    ``,
+    formatCalculationMetadata({
+      taxYear: 2026,
+      legalBases: ["EStG §32a", "SolZG §4", "EStG §9a", "EStG §32 Abs.6"],
+    }),
   );
 
   return lines.join("\n");
